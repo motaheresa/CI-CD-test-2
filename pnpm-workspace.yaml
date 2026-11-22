@@ -1,0 +1,50 @@
+packages:
+  - apps/*
+  - packages/*
+
+catalog:
+  "@eslint/js": ^10.0.1
+  "@nestjs/config": ^12.0.1
+  "@prisma/adapter-mariadb": ^7.10.1
+  "@prisma/client": ^7.10.1
+  "@tailwindcss/vite": ^4.3.3
+  "@types/node": ^24.19.2
+  dotenv: ^18.0.9
+  eslint: ^10.13.0
+  eslint-config-prettier: ^10.1.8
+  eslint-plugin-react-hooks: ^7.1.1
+  eslint-plugin-react-refresh: ^0.5.8
+  globals: ^17.14.0
+  prettier: 3.9.10
+  prisma: ^7.10.1
+  tailwindcss: ^4.3.3
+  typescript: ~7.0.2
+  typescript-eslint: ^8.72.1
+  vite: ^8.3.5
+  zod: ^4.6.7
+  react: ^19.3.1
+  react-dom: ^19.3.1
+  "@types/react": ^19.3.0
+  "@types/react-dom": ^19.3.0
+  turbo: ^2.11.13
+
+catalogs:
+  ts6:
+    typescript: ^6.0.2
+
+catalogMode: prefer
+
+allowBuilds:
+  "@prisma/engines": false
+  prisma: false
+
+tasks:
+  build:
+    dependsOn:
+      - ^build
+  lint:
+    dependsOn:
+      - ^build
+  test:
+    dependsOn:
+      - ^build

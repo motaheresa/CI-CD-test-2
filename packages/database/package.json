@@ -1,0 +1,28 @@
+{
+  "name": "@repo/database",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "prisma generate && tsc",
+    "dev": "tsc --watch --preserveWatchOutput"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "catalog:",
+    "@prisma/client": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@repo/tsconfig": "workspace:*",
+    "dotenv": "catalog:",
+    "prisma": "catalog:",
+    "typescript": "catalog:"
+  }
+}

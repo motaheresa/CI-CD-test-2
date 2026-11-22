@@ -1,0 +1,25 @@
+{
+  "name": "monorepo-app2",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22.23.3"
+  },
+  "scripts": {
+    "build:packages": "pnpm --filter \"./packages/*\" run build",
+    "predev": "pnpm build:packages",
+    "dev": "pnpm -r --parallel run dev",
+    "predev:apps": "pnpm build:packages",
+    "dev:apps": "pnpm --filter \"./apps/*\" --parallel run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "devDependencies": {
+    "prettier": "catalog:",
+    "turbo": "catalog:"
+  }
+}
