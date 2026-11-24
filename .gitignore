@@ -8,3 +8,4 @@ dist
 packages/database/src/generated
 *.tsbuildinfo
 *.pem
+coverage
