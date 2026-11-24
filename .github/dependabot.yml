@@ -1,0 +1,41 @@
+version: 2
+
+updates:
+  # JavaScript dependencies (pnpm uses the "npm" ecosystem value).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # Majors we decided to hold back on purpose:
+      # - @types/node must match the Node.js version we run (22).
+      # - the api needs TypeScript 6 (NestJS), so a TypeScript major bump is not wanted.
+      # - Prisma majors are upgraded by hand.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/*"
+        update-types: ["version-update:semver-major"]
+
+  # Actions used in .github/workflows (checkout, setup-node, ...).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Base images in the Dockerfiles (node, nginx, pnpm).
+  - package-ecosystem: "docker"
+    directories:
+      - "/apps/api"
+      - "/apps/web"
+    schedule:
+      interval: "weekly"
+
+  # Images in docker-compose.yml (mysql).
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
