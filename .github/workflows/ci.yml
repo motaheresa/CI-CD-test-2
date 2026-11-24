@@ -47,3 +47,57 @@ jobs:
       # The same check we did by hand: the files the api needs at runtime are really inside the image.
       - name: Check api image contents
         run: docker run --rm --entrypoint sh monorepo-api -c "test -s package.json && test -s dist/main.js && test -s node_modules/@repo/database/dist/index.js && test -s node_modules/@repo/shared/dist/index.js"
+
+  e2e:
+    # Runs the real stack (MySQL + api) from docker-compose.yml and sends real requests to it.
+    needs: verify
+    runs-on: ubuntu-24.04
+    env:
+      # Throwaway values: this database only exists for the length of this job.
+      MYSQL_ROOT_PASSWORD: ci-root-password
+      MYSQL_PASSWORD: ci-app-password
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Needed only to run the Prisma CLI (migrations); the api image does not contain it.
+      - run: pnpm install
+
+      - name: Start MySQL and wait until it is healthy
+        run: docker compose up -d --wait db
+
+      # The MySQL image creates its own CA at first start. The api needs a copy to verify the connection.
+      - name: Copy the MySQL CA certificate
+        run: |
+          mkdir -p apps/api/certs
+          docker compose cp db:/var/lib/mysql/ca.pem apps/api/certs/docker-ca.pem
+
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: mysql://app:ci-app-password@localhost:3307/monorepo_app2
+        run: pnpm --filter @repo/database exec prisma migrate deploy
+
+      - name: Build and start the api
+        run: docker compose up -d --build --wait api
+
+      - name: Health check (api -> MySQL over TLS)
+        run: curl --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:3000/health/db
+
+      - name: Create a user, then the same email again must give 409
+        run: |
+          body='{"email":"ci@example.com","name":"CI"}'
+          first=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/users -H 'content-type: application/json' -d "$body")
+          second=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/users -H 'content-type: application/json' -d "$body")
+          echo "first=$first second=$second"
+          test "$first" = "201"
+          test "$second" = "409"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color
