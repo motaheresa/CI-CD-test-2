@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.turbo
+**/*.tsbuildinfo
+packages/database/src/generated
+.git
+.github
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.log

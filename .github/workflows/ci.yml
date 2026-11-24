@@ -29,3 +29,21 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test
+
+  docker:
+    # Only build images for code that already passed lint/build/test.
+    needs: verify
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # Build only (nothing is pushed anywhere): proves the Dockerfiles still work.
+      - name: Build api image
+        run: docker build -f apps/api/Dockerfile -t monorepo-api .
+
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile --build-arg VITE_API_URL=http://localhost:3000 -t monorepo-web .
+
+      # The same check we did by hand: the files the api needs at runtime are really inside the image.
+      - name: Check api image contents
+        run: docker run --rm --entrypoint sh monorepo-api -c "test -s package.json && test -s dist/main.js && test -s node_modules/@repo/database/dist/index.js && test -s node_modules/@repo/shared/dist/index.js"

@@ -1,0 +1,57 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: monorepo_app2
+      MYSQL_USER: app
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:5173
+      # "db" is the service name above; inside the compose network it resolves to the db container.
+      # 3306 is the container's own port (3307 is only the port published on your PC).
+      DATABASE_URL: mysql://app:${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}@db:3306/monorepo_app2
+      DATABASE_SSL_CA_PATH: /certs/ca.pem
+      # The auto-generated server certificate does not list the host name "db".
+      DATABASE_SSL_VERIFY_HOSTNAME: "false"
+    volumes:
+      - ./apps/api/certs/docker-ca.pem:/certs/ca.pem:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Baked into the JavaScript at build time. It is the address the BROWSER uses,
+        # so it is localhost:3000 (the port published on your PC), not "api:3000".
+        VITE_API_URL: http://localhost:3000
+    ports:
+      # Host port 5173 matches the api's CORS_ORIGIN; nginx listens on 80 inside.
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  db-data:

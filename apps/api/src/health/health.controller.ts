@@ -8,6 +8,6 @@ export class HealthController {
   @Get("db")
   async db() {
     await this.prisma.$queryRaw`SELECT 1`;
-    return { status: "ok 2" };
+    return { status: "ok" };
   }
 }
