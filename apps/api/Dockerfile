@@ -13,7 +13,7 @@ RUN pnpm --filter @repo/api... run build
 RUN pnpm --filter @repo/api --prod deploy /out
 
 # ---- runtime stage: plain Node, no pnpm, no source, no dev dependencies ----
-FROM node:22-slim
+FROM node:25-slim
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /out .
