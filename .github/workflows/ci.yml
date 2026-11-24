@@ -87,7 +87,9 @@ jobs:
         run: docker compose up -d --build --wait api
 
       - name: Health check (api -> MySQL over TLS)
-        run: curl --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:3000/health/db
+        # Docker opens the published port before Nest is listening, so early attempts can be
+        # "connection reset" (not only "refused"). --retry-all-errors retries both.
+        run: curl --fail --retry 10 --retry-delay 2 --retry-all-errors http://localhost:3000/health/db
 
       - name: Create a user, then the same email again must give 409
         run: |
