@@ -1,0 +1,4 @@
+# Always use LF line endings in the working tree, on every OS.
+# Without this, Windows (core.autocrlf=true) checks files out with CRLF and
+# `prettier --check` (which expects LF) fails locally while passing in CI.
+* text=auto eol=lf
