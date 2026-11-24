@@ -33,9 +33,18 @@ updates:
       - "/apps/web"
     schedule:
       interval: "weekly"
+    ignore:
+      # Keep Node on the version we develop and test with (22, an LTS line).
+      # Odd-numbered majors (23, 25, ...) are short-lived and not for production.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
 
   # Images in docker-compose.yml (mysql).
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # A database major upgrade over existing data is a manual, planned step.
+      - dependency-name: "mysql"
+        update-types: ["version-update:semver-major"]
